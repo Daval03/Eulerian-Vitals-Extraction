@@ -8,11 +8,30 @@ from Code.signal_processing import process_buffer_evm
 from Code.face_detector import FaceDetector
 
 # Cargar los datos ground truth
-gt_filename = 'dataset_real/ground_truth_3.txt'
-VIDEO_PATH = "dataset_real/vid_3.mp4"
+gt_filename = 'dataset_real/ground_truth_4.txt'
+VIDEO_PATH = "dataset_real/vid_4.mp4"
+
+heart_rate_history = deque(maxlen=5)
+resp_rate_history = deque(maxlen=5) 
+
+
+
 gt_data = np.loadtxt(gt_filename)
 gt_hr = gt_data[1, :]  # Segunda fila: frecuencia cardíaca (HR)
 gt_chunk_hrs = [np.mean(gt_hr[i*FRAME_CHUNK:(i+1)*FRAME_CHUNK]) for i in range(len(gt_hr)//FRAME_CHUNK)]
+
+def _apply_statistical_filter(new_hr, new_rr):
+    """Aplica filtro de mediana móvil a los nuevos valores"""
+    if new_hr is not None:
+        heart_rate_history.append(new_hr)
+    if new_rr is not None:
+        resp_rate_history.append(new_rr)
+    
+    # Calcular mediana de los últimos valores
+    filtered_hr = np.median(list(heart_rate_history)) if heart_rate_history else None
+    filtered_rr = np.median(list(resp_rate_history)) if resp_rate_history else None
+    
+    return filtered_hr, filtered_rr
 
 def main():
     frame_buffer = deque(maxlen=FRAME_CHUNK)
@@ -47,16 +66,18 @@ def main():
             
             if len(frame_buffer) == FRAME_CHUNK:
                 heart_rate, resp_rate = process_buffer_evm(frame_buffer)
+                filtered_hr, filtered_rr = _apply_statistical_filter(heart_rate, resp_rate)
+                print("PR: ",filtered_hr, "RR: ",filtered_rr)
                 gt_hr = gt_chunk_hrs[chunk_counter]
-                error = abs(heart_rate - gt_hr)
+                error = abs(filtered_hr - gt_hr)
                 
                 print(f"Chunk {chunk_counter + 1}:")
-                print(f"  - HR estimada: {heart_rate:.2f} bpm")
+                print(f"  - HR estimada: {filtered_hr:.2f} bpm")
                 print(f"  - HR real: {gt_hr:.2f} bpm")
                 print(f"  - Error absoluto: {error:.2f} bpm")
                 print("-" * 40)
                 
-                estimated_hrs.append(heart_rate)
+                estimated_hrs.append(filtered_hr)
                 ground_truth_hrs.append(gt_hr)
                 
                 frame_buffer.clear()
