@@ -63,3 +63,19 @@ Develop a **low-cost, portable, and contactless** system for remote vital signs 
 ### **Prerequisites**  
 ```bash
 pip install opencv-python mediapipe scipy numpy flask flask-cors pillow
+```
+
+# Server-Client Setup for Raspberry Pi
+
+## Execution
+
+### Start the server (Raspberry Pi)
+```bash
+python servidor.py
+```
+
+### Run the client (on the same network)
+
+```bash
+python cliente.py
+```
