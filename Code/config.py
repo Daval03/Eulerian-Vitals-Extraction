@@ -10,7 +10,7 @@ HEART_RATE_WINDOW = deque(maxlen=WINDOW_SIZE)
 RESP_RATE_WINDOW = deque(maxlen=WINDOW_SIZE)
 
 # Parámetros de procesamiento
-ALPHA = 50
+ALPHA = 100
 LOW_HEART = 0.83
 HIGH_HEART = 3.0
 LOW_RESP = 0.18

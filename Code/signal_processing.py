@@ -46,18 +46,22 @@ def estimate_frequency(signal, fps):
 
 def process_buffer_evm(frame_buffer):
     """Procesa el buffer de frames usando EVM y extrae signos vitales."""
+    #1
     pyramids = [build_laplacian_pyramid(frame, LEVELS) for frame in frame_buffer]
-    level_signals = np.array([[np.mean(p[level]) for p in pyramids] 
-                               for level in range(LEVELS)]).T
     
-    heart_signal, resp_signal = apply_ica_pca(level_signals)
-
-    heart_signal = apply_bandpass_filter(heart_signal, LOW_HEART, HIGH_HEART, FPS)
-    resp_signal = apply_bandpass_filter(resp_signal, LOW_RESP, HIGH_RESP, FPS) 
-
+    #2
+    level_signals = np.array([[np.mean(p[level]) for p in pyramids] for level in range(LEVELS)]).T
+    
+    #3
+    heart_signal, resp_signal = apply_ica_pca(level_signals) 
     heart_signal *= ALPHA
     resp_signal *= ALPHA
-
+    
+    #4
+    heart_signal = apply_bandpass_filter(heart_signal, LOW_HEART, HIGH_HEART, FPS)
+    resp_signal = apply_bandpass_filter(resp_signal, LOW_RESP, HIGH_RESP, FPS) 
+    
+    #5
     heart_rate = estimate_frequency(heart_signal, FPS)
     resp_rate = estimate_frequency(resp_signal, FPS)
     
