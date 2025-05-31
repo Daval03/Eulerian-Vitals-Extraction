@@ -20,9 +20,11 @@ FPS = 30
 FRAME_CHUNK = 200
 ROI_PADDING = 10
 
+
 # Configuración de captura de video
 VIDEO_PATH = 0  # Cámara por defecto, cambia a ruta de video si es necesario
 FRAME_BUFFER = deque(maxlen=FRAME_CHUNK)
 
 # Umbral para cambios en ROI
 ROI_CHANGE_THRESHOLD = 20
+ROI_WEIGHTS = [0.1, 0.15, 0.2, 0.25, 0.3]

@@ -1,3 +1,26 @@
+"""
+Servidor Flask para Estimación de Signos Vitales
+
+Este módulo implementa un servidor web que:
+- Expone endpoints REST para controlar el proceso de estimación
+- Gestiona el cálculo de signos vitales en segundo plano
+- Proporciona stream de video para calibración
+
+Endpoints principales:
+- /start: Inicia el proceso de estimación
+- /stop: Detiene el proceso
+- /vital-signs: Devuelve los últimos valores calculados
+- /calibrate: Stream de video en tiempo real
+
+Componentes principales:
+- VitalSignsEstimator: Clase que realiza los cálculos (importada)
+- Hilo de estimación: Ejecuta el procesamiento en segundo plano
+- Mecanismos de sincronización para control seguro del estado
+
+Uso:
+    python servidor.py
+"""
+
 from flask import Flask, jsonify, Response
 from flask_cors import CORS
 from Code.vital_signs_estimator import VitalSignsEstimator
@@ -15,6 +38,15 @@ is_running = False
 
 @app.route('/start', methods=['GET'])
 def start_estimation():
+    """
+    Endpoint para iniciar el proceso de estimación.
+    
+    Returns:
+        JSON con estado de la operación:
+        - 200: Estimación iniciada correctamente
+        - 400: Estimación ya en progreso
+        - 500: Error al iniciar
+    """
     global estimation_thread, is_running
     
     if is_running:

@@ -1,9 +1,60 @@
+"""
+Módulo de Detección Facial con Estabilización de ROI
+
+Este módulo implementa detección de rostros usando MediaPipe con técnicas avanzadas de:
+
+    Estabilización temporal de la región de interés (ROI)
+
+    Filtrado de movimientos bruscos
+
+    Manejo robusto de bordes de imagen
+
+Funcionalidades clave:
+
+    Detección facial precisa con MediaPipe Face Detection
+
+    Estabilización de ROI usando promedio ponderado temporal
+
+    Detección de cambios significativos en la posición
+
+    Validación de ROI dentro de los límites de la imagen
+
+Componentes principales:
+
+    FaceDetector: Clase principal que encapsula toda la funcionalidad
+
+    Sistema de historial de ROI para estabilización
+
+    Mecanismos de ponderación temporal (weights)
+
+    Umbrales configurables para detección de cambios
+
+Uso:
+detector = FaceDetector()
+roi = detector.detect_face(frame_video)
+if roi:
+x, y, w, h = roi # ROI estabilizada
+"""
+
 import mediapipe as mp
 from collections import deque
-from Code.config import ROI_CHANGE_THRESHOLD
+from Code.config import ROI_CHANGE_THRESHOLD, ROI_WEIGHTS
 
 class FaceDetector:
+    """
+    Detector de rostros con estabilización temporal de ROI.
+    
+    Usa MediaPipe para detección y aplica filtros para reducir movimientos bruscos
+    de la región de interés, mejorando la estabilidad para análisis de signos vitales.
+    """
     def __init__(self, model_selection=0, min_detection_confidence=0.5):
+        """
+        Inicializa el detector con MediaPipe.
+        
+        Args:
+            model_selection: 0=cerca (2m), 1=lejos (5m)
+            min_detection_confidence: Umbral de confianza mínima
+        """
         self.mp_face_detection = mp.solutions.face_detection
         self.face_detection = self.mp_face_detection.FaceDetection(
             model_selection=model_selection, 
@@ -13,6 +64,14 @@ class FaceDetector:
         self.stabilized_roi = None
 
     def stabilize_roi(self, new_roi):
+        """
+        Estabiliza ROI usando media ponderada temporal.
+        
+        Args:
+            new_roi: Nueva ROI detectada (x, y, w, h)
+        Returns:
+            tuple: ROI estabilizada o None
+        """
         if new_roi is None:
             return self.stabilized_roi
 
@@ -22,7 +81,7 @@ class FaceDetector:
             return new_roi
 
         # Calcular media ponderada de coordenadas
-        weights = [0.1, 0.15, 0.2, 0.25, 0.3][:len(self.roi_history)]
+        weights = ROI_WEIGHTS[:len(self.roi_history)]
         weights = [w/sum(weights) for w in weights]
 
         x_stable = int(sum(x * w for x, w in zip([r[0] for r in self.roi_history], weights)))
@@ -34,6 +93,15 @@ class FaceDetector:
         return self.stabilized_roi
 
     def is_significant_change(self, old_roi, new_roi):
+        """
+        Determina si el cambio entre ROIs es significativo.
+        
+        Args:
+            old_roi: ROI anterior (x, y, w, h)
+            new_roi: ROI nueva (x, y, w, h)
+        Returns:
+            bool: True si el cambio supera el umbral
+        """
         if old_roi is None or new_roi is None:
             return True
 
@@ -49,6 +117,14 @@ class FaceDetector:
                dw > ROI_CHANGE_THRESHOLD or dh > ROI_CHANGE_THRESHOLD
 
     def detect_face(self, frame):
+        """
+        Detecta rostro y retorna ROI estabilizada.
+        
+        Args:
+            frame: Frame de video (numpy array)
+        Returns:
+            tuple: (x, y, w, h) de la ROI estabilizada o None
+        """
         results = self.face_detection.process(frame)
         if results.detections:
             bbox = results.detections[0].location_data.relative_bounding_box
@@ -75,4 +151,5 @@ class FaceDetector:
         return None
 
     def close(self):
+        """Libera recursos de MediaPipe."""
         self.face_detection.close()

@@ -1,3 +1,27 @@
+"""
+Cliente GUI para Monitor de Signos Vitales
+
+Este módulo implementa una interfaz gráfica que se conecta a un servidor Flask para:
+- Iniciar/detener la estimación de signos vitales
+- Mostrar los valores de frecuencia cardíaca y respiratoria
+- Visualizar el stream de video para calibración
+
+La comunicación con el servidor se realiza mediante peticiones HTTP a los endpoints:
+- /start: Inicia el proceso de estimación
+- /stop: Detiene el proceso
+- /vital-signs: Obtiene los últimos valores calculados
+- /calibrate: Stream de video para calibración
+
+Componentes principales:
+- VitalSignsClient: Clase principal que maneja la interfaz y comunicación
+- Hilos separados para:
+  * Monitoreo continuo de signos vitales
+  * Visualización del stream de video
+
+Uso:
+    python cliente.py
+"""
+
 import tkinter as tk
 import threading
 import requests
@@ -10,6 +34,16 @@ from tkinter import ttk, messagebox
 BASE_URL = "http://192.168.101.3:5000"
 
 class VitalSignsClient:
+    """
+    Clase principal del cliente GUI para monitoreo de signos vitales.
+    
+    Atributos:
+        root: Ventana principal de Tkinter
+        is_running: Bandera para estado de estimación
+        stop_event: Evento para controlar hilos
+        video_running: Bandera para estado del video
+        video_label: Widget para mostrar el stream de video
+    """
     def __init__(self, root):
         self.root = root
         self.root.title("Monitor de Signos Vitales")

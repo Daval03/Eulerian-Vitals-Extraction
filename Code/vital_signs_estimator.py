@@ -1,3 +1,28 @@
+"""
+Módulo Principal de Estimación de Signos Vitales
+
+Implementa el sistema completo para estimación no invasiva de:
+- Frecuencia cardíaca (pulsaciones por minuto)
+- Frecuencia respiratoria (respiraciones por minuto)
+
+Características principales:
+- Pipeline completo: captura → detección facial → EVM → análisis
+- Gestión thread-safe para operación en tiempo real
+- Filtrado estadístico para resultados estables
+- Manejo robusto de recursos (cámaras, memoria)
+
+Componentes clave:
+- VitalSignsEstimator: Clase principal del sistema
+- Buffer circular para procesamiento por chunks
+- Integración con FaceDetector y signal_processing
+- Mecanismos de inicialización/limpieza seguros
+
+Uso:
+    estimator = VitalSignsEstimator()
+    estimator.estimate_signs()  # Ejecutar en hilo separado
+    vitals = estimator.get_latest_vital_signs()
+"""
+
 import cv2
 import threading
 import numpy as np
@@ -8,6 +33,12 @@ from Code.face_detector import FaceDetector
 from Code.signal_processing import process_buffer_evm
 
 class VitalSignsEstimator:
+    """
+    Estimador de signos vitales desde video usando EVM.
+    
+    Pipeline: Video → Detección facial → Buffer → EVM → Filtrado estadístico → Resultados
+    Thread-safe con gestión automática de recursos.
+    """
     def __init__(self):
         self.cap = None
         self.face_detector = None
