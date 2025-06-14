@@ -75,17 +75,17 @@ def process_buffer_evm(frame_buffer):
     # 2. Extraer señales temporales por nivel
     level_signals = np.array([[np.mean(p[level]) for p in pyramids] for level in range(LEVELS)]).T
     
-    # 3.Amplificar las variaciones temporales
-    for level in range(LEVELS):
-        # Filtrar y amplificar cada nivel independientemente
-        filtered = apply_bandpass_filter(level_signals[:, level], LOW_HEART, HIGH_HEART, FPS)
-        level_signals[:, level] = level_signals[:, level] + ALPHA * filtered
+    # 3.Amplificar las variaciones temporales y aplicar ICA/PCA 
+    heart_signal, resp_signal = apply_ica_pca(level_signals) 
+    heart_signal *= ALPHA
+    resp_signal *= ALPHA
     
-    # 4. Luego aplicar ICA/PCA a las señales amplificadas
-    heart_signal, resp_signal = apply_ica_pca(level_signals)
+    # 4. Filtrar señales antes de estimar frecuencias
+    heart_signal_filtered = apply_bandpass_filter(heart_signal, LOW_HEART, HIGH_HEART, FPS)
+    resp_signal_filtered = apply_bandpass_filter(resp_signal, LOW_RESP, HIGH_RESP, FPS)
     
     # 5. Estimar frecuencias
-    heart_rate = estimate_frequency(heart_signal, FPS)
-    resp_rate = estimate_frequency(resp_signal, FPS)
+    heart_rate = estimate_frequency(heart_signal_filtered, FPS)
+    resp_rate = estimate_frequency(resp_signal_filtered, FPS)
     
     return heart_rate, resp_rate
