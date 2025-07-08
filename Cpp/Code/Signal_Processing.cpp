@@ -12,7 +12,7 @@ using namespace cv;
 using namespace std;
 using namespace Eigen;
 
-// Construcción de pirámide Laplaciana
+// Konstruksjon av Laplaciansk pyramide
 vector<Mat> buildLaplacianPyramid(const Mat& frame, int levels) {
     vector<Mat> pyramid;
     Mat current = frame.clone();
@@ -28,7 +28,7 @@ vector<Mat> buildLaplacianPyramid(const Mat& frame, int levels) {
     return pyramid;
 }
 
-// PCA simple usando Eigen
+// Enkel PCA ved bruk av Eigen
 VectorXd applyPCA(const MatrixXd& data) {
     MatrixXd centered = data.rowwise() - data.colwise().mean();
     MatrixXd cov = (centered.adjoint() * centered) / double(data.rows() - 1);
@@ -37,7 +37,7 @@ VectorXd applyPCA(const MatrixXd& data) {
     return principal;
 }
 
-// Estimar frecuencia dominante con Eigen::FFT
+// Estimere dominant frekvens med Eigen::FFT
 double estimateFrequency(const VectorXd& signal, double fps) {
     Eigen::FFT<double> fft;
     vector<complex<double>> freqDomain;
@@ -46,7 +46,7 @@ double estimateFrequency(const VectorXd& signal, double fps) {
 
     int N = timeDomain.size();
     double maxAmp = 0;
-    int maxIdx = 1; // Ignora la componente DC
+    int maxIdx = 1; // Ignorer DC-komponenten
 
     for (int i = 1; i < N / 2; ++i) {
         double magnitude = abs(freqDomain[i]);
@@ -57,31 +57,31 @@ double estimateFrequency(const VectorXd& signal, double fps) {
     }
 
     double freqHz = static_cast<double>(maxIdx) * fps / N;
-    return freqHz * 60.0; // Retorna en bpm
+    return freqHz * 60.0; // Returnerer i bpm (slag per minutt)
 }
 VectorXd butterworthBandpassFilter(const VectorXd& input, double lowcut, double highcut, double fs, int order = 3) {
-    // Adaptado de diseño digital clásico Butterworth usando bilinear transform
+    // Adaptasjon fra klassisk digital Butterworth-design ved bruk av bilinear transform
     double nyquist = 0.5 * fs;
     double low = lowcut / nyquist;
     double high = highcut / nyquist;
 
-    // Esto usa un filtro IIR Butterworth de orden 3 en dos pasos (paso alto + paso bajo)
-    // Para una implementación robusta se recomienda usar una librería como Iir1 o DSPFilters
+    // Dette bruker et 3. ordens IIR Butterworth-filter i to trinn (høypass + lavpass)
+    // For en robust implementasjon anbefales det å bruke et bibliotek som Iir1 eller DSPFilters
 
     VectorXd output = input;
 
-    // Simple implementación con filtro de diferencia - No es ideal pero funciona como aproximación
+    // Enkel implementasjon med differansefilter - Ikke ideelt, men fungerer som en tilnærming
 
     int N = input.size();
     VectorXd temp(N);
 
-    // Paso 1: filtro pasa alto (media móvil de primer orden)
+    // Trinn 1: høypassfilter (førsteordens glidende gjennomsnitt)
     temp[0] = input[0];
     for (int i = 1; i < N; ++i) {
         temp[i] = input[i] - input[i - 1] + low * temp[i - 1];
     }
 
-    // Paso 2: filtro pasa bajo (media exponencial suavizada)
+    // Trinn 2: lavpassfilter (eksponentiell glattet gjennomsnitt)
     output[0] = temp[0];
     for (int i = 1; i < N; ++i) {
         output[i] = high * temp[i] + (1.0 - high) * output[i - 1];
@@ -90,15 +90,15 @@ VectorXd butterworthBandpassFilter(const VectorXd& input, double lowcut, double 
     return output;
 }
 
-// Pipeline principal
+// Hovedpipeline
 pair<double, double> processBufferEVM(const vector<Mat>& frameBuffer) {
     int numFrames = frameBuffer.size();
-    // #1. Construir pirámides
+    // #1. Konstruer pyramider
     vector<vector<Mat>> pyramids;
     for (const auto& frame : frameBuffer) {
         pyramids.push_back(buildLaplacianPyramid(frame, Config::LEVELS));
     }
-    // # 2. Extraer señales temporales por nivel
+    // # 2. Trekk ut temporale signaler per nivå
     MatrixXd levelSignals(numFrames, Config::LEVELS);
     for (int l = 0; l < Config::LEVELS; ++l) {
         for (int t = 0; t < numFrames; ++t) {
@@ -107,14 +107,14 @@ pair<double, double> processBufferEVM(const vector<Mat>& frameBuffer) {
         }
     }
 
-    // 3. Amplificar las variaciones temporales y aplicar ICA/PCA 
+    // 3. Forsterk temporale variasjoner og bruk ICA/PCA
     VectorXd signal = applyPCA(levelSignals);
     signal *= Config::ALPHA;
 
     VectorXd heart_filtered = butterworthBandpassFilter(signal, Config::LOW_HEART, Config::HIGH_HEART, Config::FPS);
     VectorXd resp_filtered = butterworthBandpassFilter(signal, Config::LOW_RESP, Config::HIGH_RESP, Config::FPS);
 
-    // Estimación de frecuencia
+    // Frekvensestimering
     double heart_rate = estimateFrequency(heart_filtered, Config::FPS);
     double resp_rate = estimateFrequency(resp_filtered, Config::FPS);
     return {heart_rate, resp_rate};

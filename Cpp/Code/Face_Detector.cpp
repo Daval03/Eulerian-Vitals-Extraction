@@ -9,9 +9,9 @@ using namespace dnn;
 
 class Face_Detector{
     private:
-    //Model
+    //Modell
     Net net;
-    //Detección
+    //Deteksjon
     Mat blob;
     Mat detections;
     Mat roi_frame;
@@ -41,7 +41,7 @@ class Face_Detector{
                 
                 rectangle(frame, Point(x1, y1), Point(x2, y2), Scalar(0, 255, 0), 2);
                 putText(frame, format("%.2f", confidence), Point(x1, y1 - 5), 
-                           FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0), 1);
+                           FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0), 1); // Viser konfidensnivå på bildet
                 Rect roi_rect(x1, y1, x2 - x1, y2 - y1);
                 this->roi_frame = frame(roi_rect).clone();
             }

@@ -1,15 +1,15 @@
 import os
 from collections import deque
 
-# Configuración de TensorFlow
+# TensorFlow-konfigurasjon
 os.environ["TF_DISABLE_XNNPACK"] = "0"
 
-# Parámetros globales
+# Globale parametere
 WINDOW_SIZE = 5
 HEART_RATE_WINDOW = deque(maxlen=WINDOW_SIZE)
 RESP_RATE_WINDOW = deque(maxlen=WINDOW_SIZE)
 
-# Parámetros de procesamiento
+# Prosesseringsparametre
 ALPHA = 1
 LOW_HEART = 0.83
 HIGH_HEART = 3.0
@@ -21,10 +21,10 @@ FRAME_CHUNK = 200
 ROI_PADDING = 10
 
 
-# Configuración de captura de video
-VIDEO_PATH = 0  # Cámara por defecto, cambia a ruta de video si es necesario
+# Konfigurasjon for videoopptak
+VIDEO_PATH = 0  # Standardkamera, endre til videobane om nødvendig
 FRAME_BUFFER = deque(maxlen=FRAME_CHUNK)
 
-# Umbral para cambios en ROI
+# Terskel for endringer i ROI
 ROI_CHANGE_THRESHOLD = 20
 ROI_WEIGHTS = [0.1, 0.15, 0.2, 0.25, 0.3]

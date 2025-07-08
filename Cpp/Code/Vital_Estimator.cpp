@@ -11,17 +11,17 @@ using namespace dnn;
 
 void procesarBloqueFrames(const vector<Mat>& bloqueFrames) {
 
-    cout << "Procesando bloque de " << bloqueFrames.size() << " frames" << endl;
+    cout << "Prosesserer blokk med " << bloqueFrames.size() << " rammer" << endl;
 }
 
 int main() {
-    // Crear el detector de caras
+    // Opprett ansiktsdetektoren
     Face_Detector faceDetector;
     
-    // Abrir video
+    // Åpne video
     VideoCapture cap(Config::VIDEO_OUT);
     if (!cap.isOpened()) {
-        cerr << "Error al abrir el video!" << endl;
+        cerr << "Feil ved åpning av video!" << endl;
         return -1;
     }
 
@@ -32,33 +32,33 @@ int main() {
     Mat frame;
     while (true) {
         if (!cap.read(frame)) {
-            cerr << "Fin del video o error de lectura!" << endl;
+            cerr << "Slutt på video eller lesefeil!" << endl;
             break;
         }
 
-        // Usar el detector de caras para obtener ROI
+        // Bruk ansiktsdetektoren for å få ROI
         Mat roi_frame = faceDetector.Get_ROI(frame);
         
-        // Solo agregar frames con ROI válida (tamaño > 0)
+        // Legg bare til rammer med gyldig ROI (størrelse > 0)
         if (!roi_frame.empty()) {
             framesArray.push_back(roi_frame.clone());
-            imshow("Face Detection", roi_frame);
+            imshow("Ansiktsgjenkjenning", roi_frame); // Viser ansiktsgjenkjenning
         }
 
-        // Procesar cuando se alcanza el máximo de frames
+        // Prosesser når maksimalt antall rammer er nådd
         if (framesArray.size() >= Config::MAX_FRAMES) {
 
             estimation = processBufferEVM(framesArray);
-            cout<<"HR: " << estimation.first << "RR: " << estimation.second;
+            cout<<"HR: " << estimation.first << " RR: " << estimation.second; // HR: Hjertefrekvens, RR: Respirasjonsfrekvens
 
             framesArray.clear();
-            cout << "Array vaciado. Comenzando nuevo bloque..." << endl;
+            cout << "Array tømt. Starter ny blokk..." << endl;
         }
 
-        if (waitKey(1) == 27) break;  // Salir con ESC
+        if (waitKey(1) == 27) break;  // Avslutt med ESC
     }
 
-    // Procesar los frames restantes si los hay
+    // Prosesser gjenværende rammer hvis det finnes noen
     if (!framesArray.empty()) {
         procesarBloqueFrames(framesArray);
     }
