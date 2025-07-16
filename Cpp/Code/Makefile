@@ -4,7 +4,9 @@ EXECUTABLES = $(SRCS:.cpp=)
 
 
 main:
-	g++ Vital_Estimator.cpp Config.h Signal_Processing.cpp Face_Detector.cpp -o Vital_Estimator `pkg-config --cflags --libs opencv4` -O2
+	g++ Vital_Estimator.cpp Config.h Signal_Processing.cpp Utils_Process_Data.cpp Face_Detector.cpp \
+    -o Vital_Estimator `pkg-config --cflags --libs opencv4` -I/usr/include/eigen3 -lfftw3 -O2
+
 	./Vital_Estimator
 
 delete:

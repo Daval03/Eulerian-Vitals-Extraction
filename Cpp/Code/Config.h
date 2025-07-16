@@ -3,12 +3,13 @@
 namespace Config {
     // Constantes enteras
     inline constexpr int MAX_FRAMES = 200;
-    inline constexpr int WINDOW_WIDTH = 300;
-    inline constexpr int WINDOW_HEIGHT = 300;
+    inline constexpr int LIST_SIZE = 5;
 
     //Camera
     inline constexpr const char* VIDEO_OUT ="/mnt/c/Self-Study/C++/Dataset_Real/vid_1.mp4";
     inline constexpr int FPS = 30;
+    inline constexpr int WINDOW_WIDTH = 640;
+    inline constexpr int WINDOW_HEIGHT = 480;
 
     //IA model readNetFromCaffe
     inline constexpr const char* DEPLOY_MODEL = "/mnt/c/Self-Study/C++/deploy.prototxt";
@@ -21,5 +22,8 @@ namespace Config {
     inline constexpr float HIGH_HEART = 3.0;
     inline constexpr float LOW_RESP = 0.18;
     inline constexpr float HIGH_RESP = 0.5;
+
+    //IP
+    
 }
 #endif

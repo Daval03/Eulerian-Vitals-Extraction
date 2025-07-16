@@ -1,23 +1,21 @@
-
 #include "Config.h"
-#include "Signal_Processing.cpp"
-#include "Face_Detector.cpp"
+#include "Signal_Processing.h"
+#include "Face_Detector.h"
+#include "Utils_Process_Data.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 #include <iostream>
+#include <deque>
+
 using namespace cv;
 using namespace std;
 using namespace dnn;
 
-void procesarBloqueFrames(const vector<Mat>& bloqueFrames) {
-
-    cout << "Procesando bloque de " << bloqueFrames.size() << " frames" << endl;
-}
-
 int main() {
+
     // Crear el detector de caras
-    Face_Detector faceDetector;
-    
+    Face_Detector face_detector;
+
     // Abrir video
     VideoCapture cap(Config::VIDEO_OUT);
     if (!cap.isOpened()) {
@@ -27,7 +25,7 @@ int main() {
 
     vector<Mat> framesArray;
     framesArray.reserve(Config::MAX_FRAMES);
-    pair<double, double> estimation;
+    pair<double, double> estimation, estimation_filter;
 
     Mat frame;
     while (true) {
@@ -35,9 +33,8 @@ int main() {
             cerr << "Fin del video o error de lectura!" << endl;
             break;
         }
-
         // Usar el detector de caras para obtener ROI
-        Mat roi_frame = faceDetector.Get_ROI(frame);
+        Mat roi_frame = face_detector.Get_ROI(frame);
         
         // Solo agregar frames con ROI válida (tamaño > 0)
         if (!roi_frame.empty()) {
@@ -49,21 +46,20 @@ int main() {
         if (framesArray.size() >= Config::MAX_FRAMES) {
 
             estimation = processBufferEVM(framesArray);
-            cout<<"HR: " << estimation.first << "RR: " << estimation.second;
+            estimation_filter = applyStatisticalFilter(estimation.first, estimation.second);
+            cout<<"|------- \n";
+            cout<<"HR: " << estimation.first << " RR: " << estimation.second << "\n";
+            cout<<"F- HR: " << estimation_filter.first << "F- RR: " << estimation_filter.second << "\n";
+            cout<<"|------- \n";
 
             framesArray.clear();
-            cout << "Array vaciado. Comenzando nuevo bloque..." << endl;
+
         }
 
         if (waitKey(1) == 27) break;  // Salir con ESC
     }
-
-    // Procesar los frames restantes si los hay
-    if (!framesArray.empty()) {
-        procesarBloqueFrames(framesArray);
-    }
-
     cap.release();
+    face_detector.Release();
     destroyAllWindows();
     return 0;
 }
