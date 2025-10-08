@@ -1,0 +1,118 @@
+name: CI/CD Pipeline - Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:  # Permite ejecutar el workflow manualmente
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache de dependencias
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Instalar dependencias del sistema
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
+    
+    - name: Instalar dependencias de Python
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-xdist
+        pip install numpy opencv-python mediapipe
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Ejecutar tests con pytest
+      run: |
+        cd Python
+        pytest Unit_test/ -v --cov=Code --cov-report=xml --cov-report=html --cov-report=term-missing
+      continue-on-error: false
+    
+    - name: Subir reporte de cobertura a Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./Python/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+    
+    - name: Archivar reporte de cobertura HTML
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-report-${{ matrix.python-version }}
+        path: Python/htmlcov/
+    
+    - name: Comentar resultados en PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '✅ Tests ejecutados exitosamente en Python ${{ matrix.python-version }}'
+          });
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Instalar herramientas de linting
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort
+    
+    - name: Ejecutar flake8
+      run: |
+        cd Python
+        flake8 Code/ Unit_test/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 Code/ Unit_test/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      continue-on-error: true
+    
+    - name: Verificar formato con black
+      run: |
+        cd Python
+        black --check Code/ Unit_test/ || echo "⚠️ Código necesita formateo"
+      continue-on-error: true
+
+  badge-update:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Crear badge de estado
+      run: echo "✅ All tests passed"
