@@ -53,11 +53,9 @@ jobs:
     - name: Generate coverage report (optional)
       if: matrix.python-version == '3.10'
       run: |
-        pip install coverage
+        pip install pytest-cov
         cd Python
-        coverage run -m unittest discover -s Unit_test -p "*.py"
-        coverage report
-        coverage xml
+        python -m pytest Unit_test/ --cov=Code --cov-report=xml --cov-report=term-missing
     
     - name: Upload coverage to Codecov (optional)
       if: matrix.python-version == '3.10'
