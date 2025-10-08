@@ -48,7 +48,7 @@ jobs:
     - name: Run unit tests
       run: |
         cd Python
-        python -m unittest discover -s Unit_test -p "*.py" -v
+        python -m pytest Unit_test/ -v
     
     - name: Generate coverage report (optional)
       if: matrix.python-version == '3.10'
