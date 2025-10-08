@@ -5,3 +5,4 @@ numpy>=1.21.0
 flask>=2.0.0
 flask-cors>=3.0.0
 pillow>=8.0.0
+pytest>=7.0.0
