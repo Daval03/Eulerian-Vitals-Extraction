@@ -1,0 +1,10 @@
+mediapipe==0.10.21
+mtcnn==1.0.0
+numpy==1.21.5
+opencv_python==4.10.0.84
+psutil==6.0.0
+scipy==1.16.3
+ultralytics==8.3.235
+tensorflow==2.16.1
+tf-keras==2.16.0
+python==3.10
