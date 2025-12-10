@@ -2,9 +2,9 @@ name: CI/CD Pipeline - Unit Tests
 
 on:
   push:
-    branches: [ main, master]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, master]
+    branches: [main, develop]
 
 jobs:
   test:
@@ -12,7 +12,7 @@ jobs:
     
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11']
     
     steps:
     - name: Checkout code
@@ -31,37 +31,20 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
     
+    - name: Verify requirements.txt exists
+      run: |
+        if [ ! -f requirements.txt ]; then
+          echo "❌ ERROR: requirements.txt not found in the project root"
+          echo "Please make sure the requirements.txt file exists"
+          exit 1
+        fi
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Instala desde la raíz si existe
-        if [ -f requirements.txt ]; then 
-          pip install -r requirements.txt
-        # Si no, instala desde Python/ si existe
-        elif [ -f Python/requirements.txt ]; then 
-          pip install -r Python/requirements.txt
-        # Si no existe ninguno, instala las dependencias manualmente
-        else
-          pip install opencv-python mediapipe scipy numpy flask flask-cors pillow
-        fi
+        pip install -r requirements.txt
     
     - name: Run unit tests
       run: |
         cd Python
-        python -m pytest Unit_test/ -v
-    
-    - name: Generate coverage report (optional)
-      if: matrix.python-version == '3.10'
-      run: |
-        pip install pytest-cov
-        cd Python
-        python -m pytest Unit_test/ --cov=Code --cov-report=xml --cov-report=term-missing
-    
-    - name: Upload coverage to Codecov (optional)
-      if: matrix.python-version == '3.10'
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./Python/coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        python -m pytest unit_test/ -v
