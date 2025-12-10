@@ -37,14 +37,22 @@ def preprocess_signal(signal):
     if signal is None or len(signal) < 20:
         return None
     
-    # 1. Detrending (remove linear trend)
-    signal_detrended = sp_signal.detrend(signal)
+    # 0. Check if signal is already constant (before detrending)
+    if np.std(signal) < 1e-10:
+        return None
     
-    # 2. Normalization
+    # 1. Detrending (remove linear trend)
+    try:
+        signal_detrended = sp_signal.detrend(signal)
+    except:
+        return None
+    
+    # 2. Check if detrended signal is constant
     signal_std = np.std(signal_detrended)
     if signal_std < 1e-8:
         return None
     
+    # 3. Normalization
     signal_normalized = signal_detrended / signal_std
     
     return signal_normalized
