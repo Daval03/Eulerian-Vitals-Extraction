@@ -4,7 +4,6 @@ from scipy import signal as sp_signal
 def extract_temporal_signal(video_tensor, use_green_channel=True):
     """
     Extract temporal signal by spatially averaging each frame.
-    
     Args:
         video_tensor: Frame tensor (T x H x W x C)
         use_green_channel: If True, use only green channel (better for HR)
@@ -23,11 +22,9 @@ def extract_temporal_signal(video_tensor, use_green_channel=True):
     
     return np.array(signal)
 
-
 def preprocess_signal(signal):
     """
     Preprocess signal: detrending and normalization.
-    
     Args:
         signal: 1D temporal signal
     
@@ -57,11 +54,9 @@ def preprocess_signal(signal):
     
     return signal_normalized
 
-
 def apply_hamming_window(signal):
     """
     Apply Hamming window to signal.
-    
     Args:
         signal: Temporal signal
     
@@ -71,11 +66,9 @@ def apply_hamming_window(signal):
     window = np.hamming(len(signal))
     return signal * window
 
-
 def calculate_power_spectrum(signal, fps):
     """
-    Calculate power spectrum using FFT.
-    
+    Calculate power spectrum using FFT.    
     Args:
         signal: Temporal signal
         fps: Frames per second
@@ -92,12 +85,10 @@ def calculate_power_spectrum(signal, fps):
     
     return fft_freq, power_spectrum
 
-
 def find_dominant_frequency(fft_freq, power_spectrum, lowcut_hz, highcut_hz, 
                            min_bpm, max_bpm):
     """
     Find dominant frequency within specific range.
-    
     Args:
         fft_freq: FFT frequency array
         power_spectrum: Power spectrum
@@ -133,12 +124,10 @@ def find_dominant_frequency(fft_freq, power_spectrum, lowcut_hz, highcut_hz,
     
     return frequency_bpm
 
-
 def calculate_frequency_fft(temporal_signal, fps, lowcut_hz, highcut_hz, 
                            min_bpm, max_bpm):
     """
     Complete pipeline: calculate dominant frequency using FFT.
-    
     Args:
         temporal_signal: 1D temporal signal
         fps: Frames per second
