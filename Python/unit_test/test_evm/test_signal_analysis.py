@@ -3,11 +3,10 @@ import numpy as np
 from src.evm.signal_analysis import *
 
 class TestSignalAnalysis:
-    """Clase principal de tests para signal_analysis.py"""
+    """Principal class for the unit test of signal_analysis.py"""
     
     @pytest.fixture
     def setup_data(self):
-        """Fixture para configurar datos de prueba"""
         # Create synthetic video tensor (10 frames, 64x64, 3 channels)
         video_tensor = np.random.randn(10, 64, 64, 3)
         
