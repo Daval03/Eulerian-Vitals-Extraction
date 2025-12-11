@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy as np
 sys.path.append(os.path.dirname(__file__))
 
 from pyramid_processing import (
@@ -61,6 +62,12 @@ class EVMProcessor:
             tuple: (hr_signal, rr_signal) - Magnified temporal signals
                    Returns (None, None) if video has fewer than 30 frames
         """
+        if video_frames is None:
+            return None, None
+    
+        if not isinstance(video_frames, (list, np.ndarray)):
+            return None, None
+        
         if len(video_frames) < 30:
             return None, None
         
