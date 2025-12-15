@@ -61,6 +61,17 @@ On Raspberry Pi 4:
 - **End-to-End**: ~3-4 seconds per measurement
 - **Accuracy**: MAE < 5 BPM for HR under optimal conditions
 
+## Dataset & Ground Truth
+
+This project uses the **UBFC-RPPG Dataset** for validation. The dataset includes:
+- Video recordings at 30 fps (640x480 resolution)
+- Ground truth PPG data from CMS50E pulse oximeter
+- Varying indoor lighting conditions
+
+The `ground_truth_handler` is an auxiliary function that extracts reference heart rate values from the UBFC-RPPG Dataset 2 for accuracy benchmarking.
+
+**Dataset source**: [UBFC-RPPG Database](https://sites.google.com/view/ybenezeth/ubfcrppg)
+
 
 ## Configuration
 
