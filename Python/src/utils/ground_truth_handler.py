@@ -68,7 +68,7 @@ class GroundTruthHandler:
         Returns:
             float: Ground truth heart rate value, or None if not available
         """
-        if self.gt_chunk_hrs is None or chunk_index >= len(self.gt_chunk_hrs):
+        if self.gt_chunk_hrs is None or chunk_index < 0 or chunk_index >= len(self.gt_chunk_hrs):
             return None
         return self.gt_chunk_hrs[chunk_index]
     

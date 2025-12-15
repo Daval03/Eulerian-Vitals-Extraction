@@ -7,7 +7,6 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
 sys.path.append(project_root)
 from src.face_detector.manager import FaceDetector
-from src.config import TARGET_ROI_SIZE
 
 VIDEO_PARTH = "/mnt/c/Self-Study/TFG/dataset_2/subject1/vid.mp4"
 

@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.dirname(__file__))
-
+import numpy as np
 from evm_core import EVMProcessor
 from signal_analysis import calculate_frequency_fft
 from src.config import (
@@ -32,6 +32,16 @@ def process_video_evm_vital_signs(video_frames, verbose=False):
         'heart_rate': None,
         'respiratory_rate': None
     }
+    
+    if video_frames is None:
+        if verbose:
+            print("[EVM] Input is None")
+        return results
+    
+    if not isinstance(video_frames, (list, np.ndarray)):
+        if verbose:
+            print(f"[EVM] Invalid input type: {type(video_frames)}")
+        return results
     
     # Basic validation
     if len(video_frames) < 30:
@@ -91,18 +101,3 @@ def process_video_evm_vital_signs(video_frames, verbose=False):
             traceback.print_exc()
     
     return results
-
-
-def process_video_evm_heart_rate_only(video_frames):
-    """
-    Simplified version that only calculates Heart Rate.
-    Faster when Respiratory Rate is not needed.
-    
-    Args:
-        video_frames: List of ROI frames (BGR)
-    
-    Returns:
-        float: Heart rate in BPM or None
-    """
-    results = process_video_evm_vital_signs(video_frames, verbose=False)
-    return results.get('heart_rate')
