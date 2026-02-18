@@ -7,3 +7,4 @@ scipy>=1.10.0,<2.0.0
 ultralytics==8.3.235
 tensorflow==2.16.1
 tf-keras==2.16.0
+pytest

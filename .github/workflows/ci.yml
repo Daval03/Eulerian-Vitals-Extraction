@@ -1,0 +1,16 @@
+name: Python Unit Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t evm-tests .
+
+      - name: Run unit tests
+        run: docker run evm-tests
